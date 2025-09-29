@@ -300,6 +300,8 @@
   const bookEventBtn = document.getElementById('btn-book-event');
   const imgStatus = document.getElementById('img-status');
   const topMatchesEl = document.getElementById('top-matches');
+  const changePicBtn = document.getElementById('change-pic');
+  const resetPicBtn = document.getElementById('reset-pic');
 
   function renderQuestion() {
     const q = activeQuestions[current];
@@ -308,40 +310,41 @@
     progressText.textContent = `Question ${Math.min(answeredCount + 1, activeQuestions.length)} of ${activeQuestions.length}`;
     const pct = (answeredCount / activeQuestions.length) * 100;
     progressBar.style.width = Math.max(10, Math.min(100, pct + 10)) + '%';
-
-async function next(answerVal) {
-  // store at current index
-  answers[current] = answerVal;
-  if (useBackend) {
-    try {
-      const mapped = answers.map(a => a === undefined ? null : a);
-      const nxt = await backend.nextQuestion(segment, mapped);
-      current = nxt.index;
-      // if all answered
-      if (answers.every(a => a !== undefined)) { await showResult(); return; }
-      renderQuestion();
-      return;
-    } catch (_) { /* fall through to local */ }
   }
-  // local linear fallback
-  const nextIndex = answers.findIndex(a => a === undefined);
-  if (nextIndex === -1) { await showResult(); }
-  else { current = nextIndex; renderQuestion(); }
-}
 
-// Allow user to go back and change the previous answer
-if (backBtn) {
-  backBtn.addEventListener('click', () => {
-    if (current === 0) return;
-    // Step back one question and remove the last answer
-    current = Math.max(0, current - 1);
-    answers.pop();
-    // Show quiz again if result was shown
-    resEl.classList.add('hidden');
-    quizEl.classList.remove('hidden');
-    renderQuestion();
-  });
-}
+  async function next(answerVal) {
+    // store at current index
+    answers[current] = answerVal;
+    if (useBackend) {
+      try {
+        const mapped = answers.map(a => a === undefined ? null : a);
+        const nxt = await backend.nextQuestion(segment, mapped);
+        current = nxt.index;
+        // if all answered
+        if (answers.every(a => a !== undefined)) { await showResult(); return; }
+        renderQuestion();
+        return;
+      } catch (_) { /* fall through to local */ }
+    }
+    // local linear fallback
+    const nextIndex = answers.findIndex(a => a === undefined);
+    if (nextIndex === -1) { await showResult(); }
+    else { current = nextIndex; renderQuestion(); }
+  }
+
+  // Allow user to go back and change the previous answer
+  if (backBtn) {
+    backBtn.addEventListener('click', () => {
+      if (current === 0) return;
+      // Step back one question and remove the last answer
+      current = Math.max(0, current - 1);
+      answers.pop();
+      // Show quiz again if result was shown
+      resEl.classList.add('hidden');
+      quizEl.classList.remove('hidden');
+      renderQuestion();
+    });
+  }
 
 function scoreProducts() {
   // Build preference weights with slight recency boost
@@ -427,34 +430,6 @@ function bottleSVGDataUrl(brand, name, theme) {
   </svg>`;
   return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
 }
-    const colors = {
-      vanilla: ['#f8d8c8','#f2bfa5'],
-      fruity: ['#ffd6e7','#ff9fc5'],
-      floral: ['#e8e3ff','#c9c1ff'],
-      fresh: ['#d6f5ff','#aee6ff'],
-      amber: ['#ffe6cc','#ffcc99'],
-      default: ['#f1f1f1','#dedede']
-    };
-    const [c1,c2] = colors[theme] || colors.default;
-    const svg = `<?xml version="1.0" encoding="UTF-8"?>
-    <svg xmlns='http://www.w3.org/2000/svg' width='340' height='540' viewBox='0 0 340 540'>
-      <defs>
-        <linearGradient id='g' x1='0' y1='0' x2='0' y2='1'>
-          <stop offset='0%' stop-color='${c1}'/>
-          <stop offset='100%' stop-color='${c2}'/>
-        </linearGradient>
-        <filter id='shadow' x='-20%' y='-20%' width='140%' height='140%'>
-          <feDropShadow dx='0' dy='8' stdDeviation='8' flood-color='rgba(0,0,0,0.18)'/>
-        </filter>
-      </defs>
-      <rect x='90' y='40' width='160' height='40' rx='8' fill='#d4b782' filter='url(#shadow)'/>
-      <rect x='60' y='80' width='220' height='400' rx='24' fill='url(#g)' stroke='#e8e8e8' stroke-width='2' filter='url(#shadow)'/>
-      <rect x='95' y='180' width='150' height='90' rx='10' fill='rgba(255,255,255,0.75)' stroke='#e8e6e6'/>
-      <text x='170' y='215' text-anchor='middle' font-family='Poppins, Arial' font-size='16' fill='#333'>${brand}</text>
-      <text x='170' y='245' text-anchor='middle' font-family='Poppins, Arial' font-size='20' font-weight='600' fill='#333'>${name}</text>
-    </svg>`;
-    return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
-  }
 
   async function fetchWikipediaImage(name, brand) {
     try {
@@ -564,84 +539,7 @@ function bottleSVGDataUrl(brand, name, theme) {
     // Render first match by default
     await renderSelected(ranked[0]);
 
-    // Image: use provided URL or construct an SVG bottle by theme
-    const theme = top.product.family.find(t => ['vanilla','fruity','floral','fresh','amber'].includes(t)) || 'default';
-    // staged loader: override -> local -> CDN -> SVG
-    const overrideKey = `product_img_override:${top.product.id}`;
-    const overrideUrl = (typeof localStorage !== 'undefined') ? localStorage.getItem(overrideKey) : null;
-    let stage = 0;
-    const setStatus = (msg, error=false) => {
-      if (!imgStatus) return;
-      imgStatus.style.display = msg ? 'block' : 'none';
-      imgStatus.style.color = error ? '#b00020' : '#6a6a6a';
-      imgStatus.textContent = msg || '';
-    };
-    const tryNext = async () => {
-      stage++;
-      if (stage === 1) {
-        if (top.product.image) { setStatus('Loading official image…'); recImg.src = top.product.image; }
-        else { await tryNext(); }
-      } else if (stage === 2) {
-        setStatus('Searching Wikipedia image…');
-        const wiki = await fetchWikipediaImage(top.product.name, top.product.brand);
-        if (wiki) { recImg.src = wiki; }
-        else { await tryNext(); }
-      } else {
-        recImg.onerror = null;
-        setStatus('Showing generated bottle preview.', false);
-        recImg.src = bottleSVGDataUrl(top.product.brand, top.product.name, theme);
-      }
-    };
-    recImg.onerror = async () => { setStatus('Image failed to load, trying fallback…', true); await tryNext(); };
-    recImg.onload = () => setStatus('');
-    // Start with local placeholder first (always exists now)
-    if (top.product.local) { setStatus('Loading local image…'); recImg.src = top.product.local; }
-    else { await tryNext(); }
-
-    // Wire gallery redirect and clickable bottle
-    const openGallery = () => {
-      const q = encodeURIComponent(`${top.product.brand} ${top.product.name} bottle`);
-      const url = `https://www.google.com/search?tbm=isch&q=${q}`;
-      window.open(url, '_blank', 'noopener');
-    };
-    if (viewGalleryBtn) {
-      viewGalleryBtn.onclick = openGallery;
-    }
-    if (recImg) {
-      recImg.style.cursor = 'pointer';
-      recImg.onclick = openGallery;
-      recImg.title = 'Open image gallery';
-    }
-
-    // Allow user to set/reset a custom image URL for this product
-    if (changePicBtn) {
-      changePicBtn.onclick = () => {
-        const url = prompt('Paste a direct image URL (https://...) to use for this bottle:');
-        if (!url) return;
-        try {
-          if (typeof localStorage !== 'undefined') {
-            const sanitized = url.replace(/^http:\/\//i, 'https://');
-            localStorage.setItem(overrideKey, sanitized);
-          }
-          // Reload image pipeline starting from override
-          recImg.onerror = () => { alert('Could not load the provided image URL. It might be blocked by CORS or invalid. Reverting.'); recImg.onerror = null; if (typeof localStorage !== 'undefined') localStorage.removeItem(overrideKey); tryNext(); };
-          setStatus('Loading your custom image…');
-          recImg.src = (typeof localStorage !== 'undefined') ? localStorage.getItem(overrideKey) : url;
-        } catch (e) {
-          console.error(e);
-        }
-      };
-    }
-    if (resetPicBtn) {
-      resetPicBtn.onclick = () => {
-        if (typeof localStorage !== 'undefined') {
-          localStorage.removeItem(overrideKey);
-        }
-        // Re-run pipeline without override
-        recImg.onerror = tryNext;
-        tryNext();
-      };
-    }
+    // Note: removed a duplicate image/gallery block that referenced an undefined `top` variable.
 
     quizEl.classList.add('hidden');
     resEl.classList.remove('hidden');
