@@ -463,6 +463,17 @@ function bottleSVGDataUrl(brand, name, theme) {
     return product.buy;
   }
 
+  // Build a CORS-friendly proxy URL for images that may block hotlinking
+  function proxyImage(url) {
+    if (!url) return null;
+    try {
+      const withoutScheme = url.replace(/^https?:\/\//i, '');
+      return `https://images.weserv.nl/?url=${encodeURIComponent(withoutScheme)}`;
+    } catch {
+      return null;
+    }
+  }
+
   async function showResult() {
     let ranked = null;
     if (useBackend) {
@@ -503,13 +514,18 @@ function bottleSVGDataUrl(brand, name, theme) {
         stage++;
         if (stage === 1) {
           // Prefer official CDN/product image when available
-          if (product.image) { setStatus('Loading official image…'); recImg.src = product.image; }
+          if (product.image) { setStatus('Loading official image…'); recImg.src = product.image; recImg.onerror = async () => { recImg.onerror = null; await tryNext(); }; }
           else { await tryNext(); }
         } else if (stage === 2) {
+          // Try a proxied version to avoid hotlink restrictions
+          const proxied = proxyImage(product.image);
+          if (proxied) { setStatus('Loading image via proxy…'); recImg.src = proxied; }
+          else { await tryNext(); }
+        } else if (stage === 3) {
           // Next, try bundled local asset
           if (product.local) { setStatus('Loading local image…'); recImg.src = product.local; }
           else { await tryNext(); }
-        } else if (stage === 3) {
+        } else if (stage === 4) {
           // Then, try Wikipedia
           setStatus('Searching Wikipedia image…');
           const wiki = await fetchWikipediaImage(product.name, product.brand);
