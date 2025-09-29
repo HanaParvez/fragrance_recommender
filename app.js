@@ -195,7 +195,7 @@
       baseNotes: ['teakwood','mahogany','cedar','musk'],
       desc: 'Rugged woods with a clean masculine edge — versatile and confident.',
       buy: 'https://www.bathandbodyworks.com/c/mens-shop',
-      local: 'assets/bbw-men-teakwood.jpg',
+      local: 'https://images.weserv.nl/?url=bathandbodyworks.scene7.com%2Fis%2Fimage%2Fbathandbodyworks%2F026636402&w=800&h=800&fit=inside&output=jpg',
       image: 'https://bathandbodyworks.scene7.com/is/image/bathandbodyworks/026636402?wid=800&hei=800&fmt=jpg',
       pop: 0.86
     },
@@ -207,7 +207,7 @@
       baseNotes: ['blue-cypress','vetiver','cedar','citrus'],
       desc: 'Crisp aquatic freshness with clean woods — easy daytime signature.',
       buy: 'https://www.bathandbodyworks.com/c/mens-shop',
-      local: 'assets/bbw-men-ocean.jpg',
+      local: 'https://images.weserv.nl/?url=bathandbodyworks.scene7.com%2Fis%2Fimage%2Fbathandbodyworks%2F026636400&w=800&h=800&fit=inside&output=jpg',
       image: 'https://bathandbodyworks.scene7.com/is/image/bathandbodyworks/026636400?wid=800&hei=800&fmt=jpg',
       pop: 0.84
     },
@@ -219,7 +219,7 @@
       baseNotes: ['sage','bergamot','leather','musk'],
       desc: 'Clean aromatic woods with a modern musky finish.',
       buy: 'https://www.bathandbodyworks.com/c/mens-shop',
-      local: 'assets/bbw-men-graphite.jpg',
+      local: 'https://images.weserv.nl/?url=bathandbodyworks.scene7.com%2Fis%2Fimage%2Fbathandbodyworks%2F028013129&w=800&h=800&fit=inside&output=jpg',
       image: 'https://bathandbodyworks.scene7.com/is/image/bathandbodyworks/028013129?wid=800&hei=800&fmt=jpg',
       pop: 0.82
     },
@@ -231,7 +231,7 @@
       baseNotes: ['black-cardamom','smoked-vanilla','amber'],
       desc: 'Smooth amber and spice with a hint of sweet vanilla — night-out ready.',
       buy: 'https://www.bathandbodyworks.com/c/mens-shop',
-      local: 'assets/bbw-men-noir.jpg',
+      local: 'https://images.weserv.nl/?url=bathandbodyworks.scene7.com%2Fis%2Fimage%2Fbathandbodyworks%2F028013130&w=800&h=800&fit=inside&output=jpg',
       image: 'https://bathandbodyworks.scene7.com/is/image/bathandbodyworks/028013130?wid=800&hei=800&fmt=jpg',
       pop: 0.83
     },
@@ -243,7 +243,7 @@
       baseNotes: ['bourbon','oak','amber','vanilla'],
       desc: 'Warm boozy woods with ambered sweetness — cozy and charismatic.',
       buy: 'https://www.bathandbodyworks.com/c/mens-shop',
-      local: 'assets/bbw-men-bourbon.jpg',
+      local: 'https://images.weserv.nl/?url=bathandbodyworks.scene7.com%2Fis%2Fimage%2Fbathandbodyworks%2F026636401&w=800&h=800&fit=inside&output=jpg',
       image: 'https://bathandbodyworks.scene7.com/is/image/bathandbodyworks/026636401?wid=800&hei=800&fmt=jpg',
       pop: 0.81
     }
@@ -467,8 +467,11 @@ function bottleSVGDataUrl(brand, name, theme) {
   function proxyImage(url) {
     if (!url) return null;
     try {
-      const withoutScheme = url.replace(/^https?:\/\//i, '');
-      return `https://images.weserv.nl/?url=${encodeURIComponent(withoutScheme)}`;
+      const u = new URL(url);
+      // Use only host + pathname to avoid upstream query-based blocking, and let wsrv handle sizing
+      const hostPath = `${u.hostname}${u.pathname}`;
+      // Ask wsrv to deliver a large jpg; fit inside 800x800
+      return `https://images.weserv.nl/?url=${encodeURIComponent(hostPath)}&w=800&h=800&fit=inside&output=jpg`;
     } catch {
       return null;
     }
@@ -514,7 +517,7 @@ function bottleSVGDataUrl(brand, name, theme) {
         stage++;
         if (stage === 1) {
           // Prefer official CDN/product image when available
-          if (product.image) { setStatus('Loading official image…'); recImg.src = product.image; recImg.onerror = async () => { recImg.onerror = null; await tryNext(); }; }
+          if (product.image) { setStatus('Loading official image…'); recImg.src = product.image; }
           else { await tryNext(); }
         } else if (stage === 2) {
           // Try a proxied version to avoid hotlink restrictions
