@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="1000" viewBox="0 0 600 1000">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8d8c8"/>
+      <stop offset="100%" stop-color="#f2bfa5"/>
+    </linearGradient>
+  </defs>
+  <rect x="150" y="40" width="300" height="70" rx="10" fill="#d4b782"/>
+  <rect x="120" y="120" width="360" height="760" rx="28" fill="url(#g)" stroke="#eadfda"/>
+  <rect x="180" y="340" width="240" height="120" rx="12" fill="rgba(255,255,255,0.8)" stroke="#e9e1de"/>
+  <text x="300" y="390" text-anchor="middle" font-family="Poppins, Arial" font-size="20" fill="#333">Victoria's Secret</text>
+  <text x="300" y="430" text-anchor="middle" font-family="Poppins, Arial" font-size="26" font-weight="600" fill="#333">Bare Vanilla</text>
+</svg>

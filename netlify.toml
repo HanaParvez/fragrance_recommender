@@ -1,0 +1,25 @@
+# Netlify configuration for static site
+[build]
+  publish = "."
+  command = ""
+
+# Security and performance headers
+[[headers]]
+  for = "/app.js"
+  [headers.values]
+    Cache-Control = "public, max-age=60"
+
+[[headers]]
+  for = "/styles.css"
+  [headers.values]
+    Cache-Control = "public, max-age=300"
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Prevent indexing if desired (toggle to true later if you want indexing)
+[build.environment]
+  # Set to "noindex" to discourage search engines while testing
+  ROBOTS = "noindex"
