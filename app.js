@@ -196,7 +196,7 @@
       desc: 'Rugged woods with a clean masculine edge — versatile and confident.',
       buy: 'https://www.bathandbodyworks.com/c/mens-shop',
       local: 'assets/bbw-men-teakwood.jpg',
-      image: '',
+      image: 'https://bathandbodyworks.scene7.com/is/image/bathandbodyworks/026636402?wid=800&hei=800&fmt=jpg',
       pop: 0.86
     },
     {
@@ -208,7 +208,7 @@
       desc: 'Crisp aquatic freshness with clean woods — easy daytime signature.',
       buy: 'https://www.bathandbodyworks.com/c/mens-shop',
       local: 'assets/bbw-men-ocean.jpg',
-      image: '',
+      image: 'https://bathandbodyworks.scene7.com/is/image/bathandbodyworks/026636400?wid=800&hei=800&fmt=jpg',
       pop: 0.84
     },
     {
@@ -220,7 +220,7 @@
       desc: 'Clean aromatic woods with a modern musky finish.',
       buy: 'https://www.bathandbodyworks.com/c/mens-shop',
       local: 'assets/bbw-men-graphite.jpg',
-      image: '',
+      image: 'https://bathandbodyworks.scene7.com/is/image/bathandbodyworks/028013129?wid=800&hei=800&fmt=jpg',
       pop: 0.82
     },
     {
@@ -232,7 +232,7 @@
       desc: 'Smooth amber and spice with a hint of sweet vanilla — night-out ready.',
       buy: 'https://www.bathandbodyworks.com/c/mens-shop',
       local: 'assets/bbw-men-noir.jpg',
-      image: '',
+      image: 'https://bathandbodyworks.scene7.com/is/image/bathandbodyworks/028013130?wid=800&hei=800&fmt=jpg',
       pop: 0.83
     },
     {
@@ -244,7 +244,7 @@
       desc: 'Warm boozy woods with ambered sweetness — cozy and charismatic.',
       buy: 'https://www.bathandbodyworks.com/c/mens-shop',
       local: 'assets/bbw-men-bourbon.jpg',
-      image: '',
+      image: 'https://bathandbodyworks.scene7.com/is/image/bathandbodyworks/026636401?wid=800&hei=800&fmt=jpg',
       pop: 0.81
     }
   ];
