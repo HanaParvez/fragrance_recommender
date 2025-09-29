@@ -502,14 +502,21 @@ function bottleSVGDataUrl(brand, name, theme) {
       const tryNext = async () => {
         stage++;
         if (stage === 1) {
+          // Prefer official CDN/product image when available
           if (product.image) { setStatus('Loading official image…'); recImg.src = product.image; }
           else { await tryNext(); }
         } else if (stage === 2) {
+          // Next, try bundled local asset
+          if (product.local) { setStatus('Loading local image…'); recImg.src = product.local; }
+          else { await tryNext(); }
+        } else if (stage === 3) {
+          // Then, try Wikipedia
           setStatus('Searching Wikipedia image…');
           const wiki = await fetchWikipediaImage(product.name, product.brand);
           if (wiki) { recImg.src = wiki; }
           else { await tryNext(); }
         } else {
+          // Finally, fall back to generated SVG
           recImg.onerror = null;
           setStatus('Showing generated bottle preview.', false);
           recImg.src = bottleSVGDataUrl(product.brand, product.name, theme);
@@ -517,8 +524,23 @@ function bottleSVGDataUrl(brand, name, theme) {
       };
       recImg.onerror = async () => { setStatus('Image failed to load, trying fallback…', true); await tryNext(); };
       recImg.onload = () => setStatus('');
-      if (product.local) { setStatus('Loading local image…'); recImg.src = product.local; }
-      else { await tryNext(); }
+      // Kick off the staged loader using the new priority (image -> local -> Wikipedia -> SVG)
+      await tryNext();
+
+      // Wire gallery redirect and clickable bottle to Google Images for this product
+      const openGallery = () => {
+        const q = encodeURIComponent(`${product.brand} ${product.name} bottle`);
+        const url = `https://www.google.com/search?tbm=isch&q=${q}`;
+        window.open(url, '_blank', 'noopener');
+      };
+      if (viewGalleryBtn) {
+        viewGalleryBtn.onclick = openGallery;
+      }
+      if (recImg) {
+        recImg.style.cursor = 'pointer';
+        recImg.onclick = openGallery;
+        recImg.title = 'Open image gallery';
+      }
     };
 
     // Populate Top 3 matches UI
